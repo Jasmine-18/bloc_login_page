@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "741724840155",
+    "project_id": "bloclogindeeplinking",
+    "storage_bucket": "bloclogindeeplinking.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:741724840155:android:ba06ca7dbfe6ae7ea7ecfe",
+        "android_client_info": {
+          "package_name": "com.example.bloc_login_page"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "741724840155-f54elv4k88a6icnckud7lbutnpcno6pk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiLvLLO0iLNqYMSkjGdYDDKhoCckDaiuQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "741724840155-f54elv4k88a6icnckud7lbutnpcno6pk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
