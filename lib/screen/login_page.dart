@@ -328,7 +328,8 @@ class _LoginPageState extends State<LoginPage> {
                                             tooltip: "Login with GMail",
                                             hoverColor: Colors.red,
                                             onPressed: () {
-                                              print("GMAIL");
+                                              context.read<LoginBloc>().add(
+                                                  const GoogleLoginSubmitted());
                                             },
                                             icon: Image.asset(
                                                 "assets/images/gmail.png"),

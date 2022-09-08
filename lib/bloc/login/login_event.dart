@@ -38,5 +38,8 @@ class LoginSubmitted extends LoginEvent {
 class FacebookLoginSubmitted extends LoginEvent{
   const FacebookLoginSubmitted();
 }
+class GoogleLoginSubmitted extends LoginEvent{
+  const GoogleLoginSubmitted();
+}
 
 class LogoutRequested extends LoginEvent {}

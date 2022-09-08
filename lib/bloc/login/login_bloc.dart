@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:bloc_login_page/helper/app_preferences.dart';
 import 'package:bloc_login_page/repository/user_repository.dart';
+import 'package:bloc_login_page/utilities/authentication_google.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:meta/meta.dart';
 
@@ -22,6 +24,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmitted>(_onSubmitted);
     // on<LoginSubmitted>(_onSubmitted);
     on<FacebookLoginSubmitted>(_onFacebookLoginSubmitted);
+    on<GoogleLoginSubmitted>(_onGoogleLoginSubmitted);
   }
 
   void _onUsernameChanged(
@@ -58,6 +61,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         AppPreference.getAccessToken().then((value) => {
               print("Here is the  ${value}"),
             });
+        AppPreference.setLoginProvider('local');
         emit(state.copyWith(status: 'success', response: token));
       } else {
         emit(state.copyWith(
@@ -81,10 +85,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppPreference.setAccessToken(result.accessToken.toString());
         FacebookAuth.instance.getUserData().then((userData) async {
           print(userData);
-
           data['name'] = userData['name'];
           data['email'] = userData['email'];
           data['profilePic'] = userData['picture']['data']['url'];
+          AppPreference.setLoginProvider('facebook');
           await AppPreference.setFacebookProfile(data);
           AppPreference.getFacebookProfile()
               .then((value) => {print("Here is the ${value['name']}")});
@@ -101,6 +105,24 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     } catch (e) {
       print(e);
+    }
+  }
+
+  void _onGoogleLoginSubmitted(
+      GoogleLoginSubmitted event, Emitter<LoginState> emit) async {
+    FirebaseService service = new FirebaseService();
+
+    try {
+      emit(
+        state.copyWith(status: 'pending'),
+      );
+      await service.signInwithGoogle();
+      AppPreference.setLoginProvider('google');
+      emit(state.copyWith(status: 'success'));
+    } catch (e) {
+      if (e is FirebaseAuthException) {
+        print(e.message!);
+      }
     }
   }
 }
