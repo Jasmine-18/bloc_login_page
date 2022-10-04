@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   static const List<Widget> _pages = <Widget>[
-    InAppMessagingPage(),
+    RemoteConfigPage(),
     TransactionPage(),
     DynamicLinkGeneratorPage(),
     ProfilePage(),
