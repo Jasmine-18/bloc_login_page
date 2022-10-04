@@ -1,4 +1,5 @@
 import 'package:bloc_login_page/screen/dynamic_link_generator_screen.dart';
+import 'package:bloc_login_page/screen/in_app_messaging_app.dart';
 import 'package:bloc_login_page/screen/profile_page.dart';
 import 'package:bloc_login_page/screen/transaction_page.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   static const List<Widget> _pages = <Widget>[
+    InAppMessagingPage(),
     TransactionPage(),
     DynamicLinkGeneratorPage(),
     ProfilePage(),
@@ -27,7 +29,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         // appBar: AppBar(
         //   title: const Text("Home Page"),
@@ -36,7 +38,12 @@ class _HomePageState extends State<HomePage> {
           child: _pages.elementAt(_selectedIndex), //New
         ),
         bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.message),
+              label: 'Messaging',
+            ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt),
               label: 'Transaction',

@@ -13,36 +13,33 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// To verify that your messages are being received, you ought to see a notification appearon your device/emulator via the flutter_local_notifications plugin.
-/// Define a top-level named handler which background/terminated messages will
-/// call. Be sure to annotate the handler with `@pragma('vm:entry-point')` above the function declaration.
-@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  await setupFlutterNotifications();
-  showFlutterNotification(message);
   // If you're going to use other Firebase services in the background, such as Firestore,
   // make sure you call `initializeApp` before using other Firebase services.
+  // await Firebase.initializeApp();
   print('Handling a background message ${message.messageId}');
 }
 
 /// Create a [AndroidNotificationChannel] for heads up notifications
-late AndroidNotificationChannel channel;
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  'high_importance_channel', // id
+  'High Importance Notifications', // title
+  'This channel is used for important notifications.', // description
+  importance: Importance.high,
+);
 
-bool isFlutterLocalNotificationsInitialized = false;
+/// Initialize the [FlutterLocalNotificationsPlugin] package.
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
-Future<void> setupFlutterNotifications() async {
-  if (isFlutterLocalNotificationsInitialized) {
-    return;
-  }
-  channel = const AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    'This channel is used for important notifications.', // description
-    importance: Importance.high,
-  );
-
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+Future<void> main() async {
+  SharedPreferences.setMockInitialValues({});
+  WidgetsFlutterBinding.ensureInitialized();
+  Firebase.initializeApp();
+  await Firebase.initializeApp();
+  // Set the background messaging handler early on, as a named top-level function
+  /*Firebase INIT*/
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   /// Create an Android Notification Channel.
   ///
@@ -60,45 +57,6 @@ Future<void> setupFlutterNotifications() async {
     badge: true,
     sound: true,
   );
-  isFlutterLocalNotificationsInitialized = true;
-}
-
-void showFlutterNotification(RemoteMessage message) {
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
-  if (notification != null && android != null && !kIsWeb) {
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channel.description,
-          // TODO add a proper drawable resource to android, for now using
-          //      one that already exists in example app.
-          icon: 'launch_background',
-        ),
-      ),
-    );
-  }
-}
-
-/// Initialize the [FlutterLocalNotificationsPlugin] package.
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-
-Future<void> main() async {
-  SharedPreferences.setMockInitialValues({});
-  WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
-  await Firebase.initializeApp();
-  // Set the background messaging handler early on, as a named top-level function
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  if (!kIsWeb) {
-    await setupFlutterNotifications();
-  }
   runApp(const MyApp(
     userRepository: UserRepository(),
   ));
@@ -149,17 +107,6 @@ class _AppViewState extends State<AppView> {
 
   @override
   Widget build(BuildContext context) {
-    @override
-    void initState() {
-      super.initState();
-
-      FirebaseMessaging.onMessage.listen(showFlutterNotification);
-
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        print('A new onMessageOpenedApp event was published!');
-      });
-    }
-
     return MaterialApp(
       initialRoute: '/',
       routes: {
