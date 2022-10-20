@@ -1,6 +1,6 @@
-import 'dart:convert';
-
+import 'dart:developer';
 import 'package:bloc/bloc.dart';
+import 'package:bloc_login_page/bloc/login/login_repository.dart';
 import 'package:bloc_login_page/helper/app_preferences.dart';
 import 'package:bloc_login_page/repository/user_repository.dart';
 import 'package:bloc_login_page/utilities/authentication_google.dart';
@@ -8,12 +8,12 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:meta/meta.dart';
-
 part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final UserRepository _userRepository;
+  final LoginRepository _loginRepository = LoginRepository();
 
   LoginBloc({required UserRepository userRepository})
       : _userRepository = userRepository,
@@ -29,7 +29,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   void _onUsernameChanged(
       LoginUsernameChanged event, Emitter<LoginState> emit) {
-    print("onuserchanged: ${state.password}");
     emit(state.copyWith(username: event.username, status: ''));
   }
 
@@ -39,36 +38,25 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void _onSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
+    emit(
+      state.copyWith(status: 'pending'),
+    );
+    // Map<String, dynamic> response = await _userRepository.login(
+    //   username: state.username,
+    //   password: state.password,
+    // );
     try {
-      // print("Event username: ${event.username}");
-      // print("State username: ${state}");
-      emit(
-        state.copyWith(status: 'pending'),
-      );
-      print("Start pending");
-      Future.delayed(const Duration(milliseconds: 6000), () {
-        print("pending...");
-      });
-      Map<String, dynamic> response = await _userRepository.login(
-        username: state.username,
-        password: state.password,
-      );
-      print("End pending");
-      if (response.containsKey('token')) {
-        String token = response['token']['access_token'];
-        await AppPreference.setAccessToken(token);
-        // Testing of getting token from shared preferences
-        AppPreference.getAccessToken().then((value) => {
-              print("Here is the  ${value}"),
-            });
-        AppPreference.setLoginProvider('local');
-        emit(state.copyWith(status: 'success', response: token));
-      } else {
-        emit(state.copyWith(
-            response: response['error']['message'], status: 'failed'));
-      }
+      var response = await _loginRepository.getLoginResponse(
+          username: state.username, password: state.password);
+
+      String token = response.accessToken;
+      await AppPreferences.setAccessToken(token);
+      // Testing of getting token from shared preferences
+      AppPreferences.getAccessToken();
+      AppPreferences.setLoginProvider('local');
+      emit(state.copyWith(status: 'success', response: 'token'));
     } catch (e) {
-      print(e);
+      emit(state.copyWith(response: e.toString(), status: 'failed'));
     }
   }
 
@@ -82,46 +70,39 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       final LoginResult result = await FacebookAuth.instance
           .login(permissions: ['public_profile', 'email']);
       if (result.status == LoginStatus.success) {
-        await AppPreference.setAccessToken(result.accessToken.toString());
+        await AppPreferences.setAccessToken(result.accessToken.toString());
         FacebookAuth.instance.getUserData().then((userData) async {
-          print(userData);
           data['name'] = userData['name'];
           data['email'] = userData['email'];
           data['profilePic'] = userData['picture']['data']['url'];
-          AppPreference.setLoginProvider('facebook');
-          await AppPreference.setFacebookProfile(data);
-          AppPreference.getFacebookProfile()
-              .then((value) => {print("Here is the ${value['name']}")});
+          AppPreferences.setLoginProvider('facebook');
+          await AppPreferences.setFacebookProfile(data);
+          AppPreferences.getFacebookProfile()
+              .then((value) => {log("Here is the ${value['name']}")});
         });
         emit(state.copyWith(status: 'success'));
       } else {
         emit(state.copyWith(status: 'failed'));
       }
-      // await FacebookAuth.instance
-      //     .login(permissions: ['public_profile', 'email']).then((value) {
-      //   print("this is valei: ${value.accessToken}");
-
-      // });
-
     } catch (e) {
-      print(e);
+      log(e.toString());
     }
   }
 
   void _onGoogleLoginSubmitted(
       GoogleLoginSubmitted event, Emitter<LoginState> emit) async {
-    FirebaseService service = new FirebaseService();
+    FirebaseService service = FirebaseService();
 
     try {
       emit(
         state.copyWith(status: 'pending'),
       );
       await service.signInwithGoogle();
-      AppPreference.setLoginProvider('google');
+      AppPreferences.setLoginProvider('google');
       emit(state.copyWith(status: 'success'));
     } catch (e) {
       if (e is FirebaseAuthException) {
-        print(e.message!);
+        log(e.message!);
       }
     }
   }

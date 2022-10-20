@@ -27,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
     return MaterialApp(
         home: BlocConsumer<LoginBloc, LoginState>(
       listener: (context, state) {
-        print(state.status);
         if (state.status == 'success') {
           ProgressLoader.cancelLoader(context);
           Navigator.pushAndRemoveUntil(
@@ -35,17 +34,11 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (BuildContext context) => HomePage()),
             ModalRoute.withName('/homepage'),
           );
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (BuildContext context) => const HomePage(),
-          //   ),
-          // );
         } else if (state.status == 'pending') {
           ProgressLoader.showLoadingDialog(context);
         } else if (state.status == 'failed') {
           ProgressLoader.cancelLoader(context);
-          _showErrorDialog("Invalid username or password");
+          _showErrorDialog(state.response!);
         }
       },
       builder: (context, state) {

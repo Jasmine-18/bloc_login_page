@@ -22,7 +22,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Future.delayed(
       Duration(milliseconds: 100),
       () async {
-        AppPreference.getLoginProvider().then((value) {
+        AppPreferences.getLoginProvider().then((value) {
           setState(() {
             loginProvider = value;
           });
@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
             });
             break;
           case 'facebook':
-            AppPreference.getFacebookProfile().then(
+            AppPreferences.getFacebookProfile().then(
               (value) {
                 print(value);
                 if (value.isEmpty) {
@@ -97,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(email),
               ElevatedButton(
                   onPressed: () {
-                    AppPreference.logoutClearPreferences();
+                    AppPreferences.logoutClearPreferences();
                     if (loginProvider == 'google') {
                       FirebaseService service = new FirebaseService();
                       service.signOutFromGoogle();

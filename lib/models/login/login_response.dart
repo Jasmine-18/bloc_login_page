@@ -4,9 +4,10 @@ class LoginResponse {
 
   LoginResponse({required this.message, required this.accessToken});
 
-  fromJson(Map<String, dynamic> json) {
-    message = json['message'];
-    accessToken = json['access_token'];
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    String message = json['message'];
+    String accessToken = json['access_token'];
+    return LoginResponse(message: message, accessToken: accessToken);
   }
 
   Map<String, dynamic> toJson() {
